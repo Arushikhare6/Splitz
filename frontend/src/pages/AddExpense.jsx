@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 const AddExpense = () => {
   const navigate = useNavigate();
   
-  // Store lists for dropdowns
+  // State for dropdown lists
   const [users, setUsers] = useState([]);
   const [groups, setGroups] = useState([]);
 
@@ -14,11 +14,11 @@ const AddExpense = () => {
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
-    paidBy: '', // Will store the selected User ID
-    group: ''   // Will store the selected Group ID
+    paidBy: '', 
+    group: ''   
   });
 
-  // Fetch Users and Groups when page loads
+  // Fetch lists when page loads
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -28,12 +28,16 @@ const AddExpense = () => {
         setUsers(usersRes.data);
         setGroups(groupsRes.data);
 
-        // Default to the first option if available
-        if (usersRes.data.length > 0) setFormData(prev => ({ ...prev, paidBy: usersRes.data[0]._id }));
-        if (groupsRes.data.length > 0) setFormData(prev => ({ ...prev, group: groupsRes.data[0]._id }));
+        // Auto-select the first option if available (prevents empty selection bug)
+        if (usersRes.data.length > 0) {
+          setFormData(prev => ({ ...prev, paidBy: usersRes.data[0]._id }));
+        }
+        if (groupsRes.data.length > 0) {
+          setFormData(prev => ({ ...prev, group: groupsRes.data[0]._id }));
+        }
         
       } catch (err) {
-        console.error("Error fetching data:", err);
+        console.error("Error fetching lists:", err);
       }
     };
     fetchData();
@@ -59,7 +63,6 @@ const AddExpense = () => {
     <div className="min-h-screen bg-gray-50 p-6 flex justify-center items-center">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         
-        {/* Header */}
         <div className="flex items-center mb-6">
           <button onClick={() => navigate('/')} className="text-gray-500 hover:text-gray-700">
             <ArrowLeft size={24} />
@@ -69,18 +72,16 @@ const AddExpense = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           
-          {/* Description Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <input type="text" name="description" value={formData.description} onChange={handleChange} 
-              placeholder="e.g. Lab Manual Printing" className="w-full p-3 border rounded-lg" required />
+              className="w-full p-3 border rounded-lg" placeholder="e.g. Taxi Fare" required />
           </div>
 
-          {/* Amount Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
             <input type="number" name="amount" value={formData.amount} onChange={handleChange} 
-              placeholder="0.00" className="w-full p-3 border rounded-lg" required />
+              className="w-full p-3 border rounded-lg" placeholder="0.00" required />
           </div>
 
           {/* User Dropdown */}
