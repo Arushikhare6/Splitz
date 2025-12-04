@@ -120,7 +120,7 @@ const Dashboard = () => {
         {/* --- HEADER SECTION --- */}
         <header className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Rasayans Tracker 🧪</h1>
+            <h1 className="text-3xl font-bold text-gray-800">SPLITZ</h1>
             <p className="text-gray-500">Welcome back, {userName}!</p>
           </div>
           <button onClick={handleLogout} className="text-gray-500 hover:text-red-500 transition p-2 hover:bg-red-50 rounded-full" title="Logout">
