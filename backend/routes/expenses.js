@@ -84,6 +84,34 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+router.post('/settle', auth, async (req, res) => {
+  try {
+    const { group, paidBy, paidTo, amount } = req.body;
+
+    // A Settlement is just a special expense
+    // Payer = Debtor
+    // Split = 100% assigned to Creditor (so it balances out)
+    const newExpense = new Expense({
+      description: 'Settlement',
+      amount,
+      paidBy, // Person who owed money
+      group,
+      category: 'Other',
+      splitDetails: [
+        { user: paidTo, amountOwed: amount } // The person receiving gets "charged" the positive value to balance their negative
+      ],
+      date: new Date()
+    });
+
+    const saved = await newExpense.save();
+    res.json(saved);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
+});
+
 module.exports = router;
 
 
