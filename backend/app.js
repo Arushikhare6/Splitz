@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const groupRoute = require('./routes/groups');
+const authRoute = require('./routes/auth');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -11,6 +12,7 @@ app.use(express.json());
 app.use(cors());
 app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/groups', groupRoute);
+app.use('/api/auth', authRoute);
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)
