@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Check } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom'; // 1. Imported Link
+import { ArrowLeft, Users, Check, PlusCircle } from 'lucide-react'; // 2. Imported PlusCircle
 
 const CreateGroup = () => {
   const navigate = useNavigate();
@@ -42,13 +42,27 @@ const CreateGroup = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center items-center p-6">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
-        <div className="flex items-center mb-6">
-          <button onClick={() => navigate('/')} className="text-gray-500">
-            <ArrowLeft size={24} />
-          </button>
-          <h2 className="text-2xl font-bold ml-4">Create Group</h2>
+        
+        {/* HEADER SECTION */}
+        <div className="flex justify-between items-center mb-6">
+          {/* Left Side: Back Arrow & Title */}
+          <div className="flex items-center">
+            <button onClick={() => navigate('/')} className="text-gray-500 hover:text-gray-700">
+              <ArrowLeft size={24} />
+            </button>
+            <h2 className="text-2xl font-bold ml-4">Create Group</h2>
+          </div>
+
+          {/* Right Side: The New "Add Expense" Button */}
+          <Link to="/add-expense">
+            <button className="flex items-center space-x-1 text-sm bg-blue-100 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-200 transition">
+              <PlusCircle size={16} />
+              <span>Add Expense</span>
+            </button>
+          </Link>
         </div>
 
+        {/* FORM SECTION */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium mb-1">Group Name</label>
@@ -69,7 +83,7 @@ const CreateGroup = () => {
                 <div 
                   key={user._id} 
                   onClick={() => toggleMember(user._id)}
-                  className={`flex justify-between p-3 rounded cursor-pointer border ${
+                  className={`flex justify-between items-center p-3 rounded cursor-pointer border transition-all ${
                     selectedMembers.includes(user._id) ? 'bg-blue-50 border-blue-500' : 'bg-white'
                   }`}
                 >
@@ -80,7 +94,7 @@ const CreateGroup = () => {
             </div>
           </div>
 
-          <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded">
+          <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded transition">
             Create Group
           </button>
         </form>

@@ -3,7 +3,7 @@ const router = express.Router();
 const Group = require('../models/Group');
 const User = require('../models/User');
 
-// 1. Get all users (so you can select them when making a group)
+// 1. Get all users (for the checklist)
 router.get('/users', async (req, res) => {
   try {
     const users = await User.find();
@@ -36,5 +36,4 @@ router.post('/create', async (req, res) => {
   }
 });
 
-// CRITICAL LINE: This exports the route so index.js can use it
 module.exports = router;
