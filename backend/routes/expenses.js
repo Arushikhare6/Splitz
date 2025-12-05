@@ -3,7 +3,8 @@ const router = express.Router();
 const Expense = require('../models/Expense');
 const User = require('../models/User');
 const Group = require('../models/Group');
-const auth = require('../middleware/authMiddleware'); // Feature: Security
+const auth = require('../middleware/authMiddleware'); 
+const Notification = require('../models/Notification'); 
 
 // 1. GET ALL USERS (Protected)
 router.get('/users', auth, async (req, res) => {
@@ -16,8 +17,6 @@ router.get('/users', auth, async (req, res) => {
 });
 
 // 2. GET ALL GROUPS (Protected + Populated)
-// Feature Combined: Uses 'auth' (from incoming) AND '.populate' (from HEAD)
-// We need .populate to show the member count and names on the Dashboard cards.
 router.get('/groups', auth, async (req, res) => {
   try {
     const groups = await Group.find().populate('members', 'name');
@@ -28,7 +27,6 @@ router.get('/groups', auth, async (req, res) => {
 });
 
 // 3. GET EXPENSES FOR A SPECIFIC GROUP
-// Feature Preserved: This route is needed for the Group Details page (from HEAD)
 router.get('/group/:groupId', auth, async (req, res) => {
   try {
     const expenses = await Expense.find({ group: req.params.groupId }).populate('paidBy', 'name');
@@ -38,19 +36,19 @@ router.get('/group/:groupId', auth, async (req, res) => {
   }
 });
 
-// 4. ADD EXPENSE (Protected + Auto-Split)
+// 4. ADD EXPENSE (With Name Fix)
 router.post('/add', auth, async (req, res) => {
   try {
     const { description, amount, paidBy, group, category } = req.body;
 
-    // 1. Fetch group to find members
+    // 1. Fetch group
     const groupData = await Group.findById(group);
     if (!groupData) return res.status(404).json({ message: "Group not found" });
 
     // 2. Calculate Equal Split
     const splitAmount = amount / groupData.members.length;
 
-    // 3. Create "Who Owes Whom" array
+    // 3. Create Split Details
     const splitDetails = groupData.members.map(memberId => ({
       user: memberId,
       amountOwed: memberId.toString() === paidBy ? 0 : splitAmount
@@ -62,11 +60,35 @@ router.post('/add', auth, async (req, res) => {
       paidBy,
       group,
       category: category || 'Other',
-      splitDetails,      // Save calculated split
-      date: new Date()   // Feature Preserved: Date tracking (from HEAD)
+      splitDetails,      
+      date: new Date()   
     });
 
     const savedExpense = await newExpense.save();
+
+    // ---------------------------------------------------------
+    // 🔔 NOTIFICATION LOGIC (FIXED NAME ISSUE)
+    // ---------------------------------------------------------
+    
+    // Fetch the Payer's Name from DB so we don't say "a friend"
+    const payerUser = await User.findById(paidBy);
+    const payerName = payerUser ? payerUser.name : 'a friend';
+
+    const notifications = splitDetails
+      .filter(split => split.amountOwed > 0 && split.user.toString() !== paidBy)
+      .map(split => ({
+        userId: split.user,
+        // Using the fetched name here 👇
+        message: `You owe ₹${Math.round(split.amountOwed)} for "${description}" (Paid by ${payerName})`,
+        isRead: false
+      }));
+
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+      console.log(`✅ ${notifications.length} Notifications Sent by ${payerName}!`);
+    }
+    // ---------------------------------------------------------
+
     res.status(200).json(savedExpense);
   } catch (err) {
     console.error(err);
@@ -74,7 +96,7 @@ router.post('/add', auth, async (req, res) => {
   }
 });
 
-// 5. GET ALL EXPENSES (Global List - Protected)
+// 5. GET ALL EXPENSES
 router.get('/', auth, async (req, res) => {
   try {
     const expenses = await Expense.find().populate('paidBy', 'name');
@@ -84,8 +106,33 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+// 6. SETTLE UP
+router.post('/settle', auth, async (req, res) => {
+  try {
+    const { group, paidBy, paidTo, amount } = req.body;
 
+    const newExpense = new Expense({
+      description: 'Settlement',
+      amount,
+      paidBy, 
+      group,
+      category: 'Other',
+      splitDetails: [
+        { user: paidTo, amountOwed: amount } 
+      ],
+      date: new Date()
+    });
+
+    const saved = await newExpense.save();
+    res.json(saved);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
+});
+
+module.exports = router;
 
 
 // const express = require('express');

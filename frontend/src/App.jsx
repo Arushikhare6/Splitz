@@ -2,12 +2,13 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // Import your pages
-import Login from './pages/LogIn'; // Note: Kept your specific 'LogIn' spelling
+import Login from './pages/LogIn'; 
 import SignUp from './pages/SignUp'; 
 import Dashboard from './pages/Dashboard';
 import AddExpense from './pages/AddExpense';
 import CreateGroup from './pages/CreateGroup';
 import GroupDetails from './pages/GroupDetails'; 
+import JoinGroup from './pages/JoinGroup'; // <--- 1. NEW IMPORT
 
 // 🛡️ Helper 1: PROTECTED ROUTE (For Dashboard, Features)
 // If NOT logged in -> Go to Login.
@@ -77,6 +78,13 @@ function App() {
         <Route path="/group/:groupId" element={
           <ProtectedRoute>
             <GroupDetails />
+          </ProtectedRoute>
+        } />
+
+        {/* 6. JOIN GROUP VIA LINK (New Route) */}
+        <Route path="/join/:groupId" element={
+          <ProtectedRoute>
+            <JoinGroup />
           </ProtectedRoute>
         } />
 

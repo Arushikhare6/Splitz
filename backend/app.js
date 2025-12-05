@@ -8,9 +8,10 @@ const User = require('./models/User');
 const Group = require('./models/Group');
 
 // 2. IMPORT ROUTES
-const authRoute = require('./routes/auth');      // <--- IMPORT THIS
+const authRoute = require('./routes/auth');
 const expenseRoute = require('./routes/expenses');
 const groupRoute = require('./routes/groups');
+const notificationRoute = require('./routes/notifications'); 
 
 const app = express();
 
@@ -18,10 +19,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 3. CONNECT ROUTES (This acts like a traffic controller)
-app.use('/api/auth', authRoute);          // <--- THIS LINE WAS LIKELY MISSING
+// 3. CONNECT ROUTES (Traffic Controllers)
+app.use('/api/auth', authRoute);
 app.use('/api/expenses', expenseRoute);
 app.use('/api/groups', groupRoute);
+app.use('/api/notifications', notificationRoute); 
 
 // --- AUTO-PILOT: Creates Default Data if DB is Empty ---
 const initialiseDatabase = async () => {
@@ -30,8 +32,6 @@ const initialiseDatabase = async () => {
     if (userCount === 0) {
       console.log("⚙️ Database is empty. Creating default users...");
       
-      // Note: We use simple passwords for auto-seeded users. 
-      // The auth.js file handles this via the "fallback" check.
       const u1 = await new User({ name: "Arushi", email: "arushi@test.com", password: "123" }).save();
       const u2 = await new User({ name: "Rahul", email: "rahul@test.com", password: "123" }).save();
       const u3 = await new User({ name: "Sneha", email: "sneha@test.com", password: "123" }).save();
